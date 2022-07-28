@@ -1,0 +1,5 @@
+/MITLicenseTemp.*
+files/*.*
+out/
+node_modules
+compile
