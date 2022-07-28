@@ -1,0 +1,23 @@
+net transfer project
+==============================
+1. Host a localhost server and get the local ip (ipv4)
+2. Make up a GUI which can select file and get the link.
+    -a. Copy file.
+    -b. Set static.
+3. End.
+==============================
+Hosting of server: Node js
+GUI: Electron
+Geting of ipv4: os
+==============================
+Libs:
+    node js
+    express
+    electron
+    child_process
+    os
+    glob
+==============================
+1. server.js
+2. gui.js
+3. main.bat
