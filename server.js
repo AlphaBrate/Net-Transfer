@@ -25,7 +25,12 @@ const pt = 1345; // port
 const link = "http://" + ipv4 + ":" + pt; // generate the link
 const file = __dirname + "\\files"; // generate the path that user put files in
 app.get("/",(req,res)=>{
-    res.end(`<!DOCTYPE html>
+    frs = [];
+    glob("files/*", function (er, files) {
+        files.forEach(w=>{
+            frs.push(w.split("files/")[1]);
+        });
+        res.end(`<!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
@@ -266,9 +271,17 @@ app.get("/",(req,res)=>{
                 </defs>
                 </svg>
                 </p>
+                <div style="display:flex;flex-direction:column;align-items:center;font-size:24px;" id="eta"></div>
         </div>
+        <script>
+                const files = ${JSON.stringify(frs)};
+                files.forEach(w=>{
+                    document.getElementById("eta").innerHTML += "<a href=" + w + ">" + w + "</a>";
+                });
+        </script>
     </body>
     </html>`)
+    });
 });
 app.get("/app/gui",(req,res)=>{
     frs = [];
