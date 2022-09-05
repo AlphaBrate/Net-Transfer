@@ -1,10 +1,12 @@
 // Part of net transfer project, under MIT License.
 // (c) AlphaBrate 2022.
-const express = require("express"); // included express
+const QRCode = require('qrcode');
+const express = require("express"); // localhost server
 const { networkInterfaces } = require('os'); // use to get user ipv4
 const glob = require("glob"); // use to read path
 const nets = networkInterfaces(); // return of network interface
 const results = Object.create(null); // defind result
+const { exec } = require("child_process");
 for (const name of Object.keys(nets)) { // geting ip
     for (const net of nets[name]) {
         // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
@@ -18,14 +20,20 @@ for (const name of Object.keys(nets)) { // geting ip
         }
     }
 }
+var qrc;
 const ipv4 = results["Wi-Fi"][0]; // ipv4 of user
 const app = express(); //
 app.use(express.static("files")); // use folder: files as the static lib.
 const pt = 1345; // port
 const link = "http://" + ipv4 + ":" + pt; // generate the link
 const file = __dirname + "\\files"; // generate the path that user put files in
+
+QRCode.toDataURL(link, function (err, url) {
+    qrc = url;
+});
+
 app.get("/",(req,res)=>{
-    frs = [];
+    frs = []; // List of files
     glob("files/*", function (er, files) {
         files.forEach(w=>{
             frs.push(w.split("files/")[1]);
@@ -460,8 +468,7 @@ app.get("/app/gui",(req,res)=>{
                     flex-wrap: wrap;
                 }
         
-                .image>img {
-                    width: 80%;
+                img {
                     margin: 15px;
                     max-width: 500px;
                     border-radius: 15px;
@@ -512,6 +519,10 @@ app.get("/app/gui",(req,res)=>{
                 input[readonly] {
                     border-bottom: 5px solid #ccc;
                 }
+                .product>.image {
+                    display: flex;
+                    flex-direction: column;
+                }
             </style>
         </head>
         <body>
@@ -532,26 +543,18 @@ app.get("/app/gui",(req,res)=>{
                     </p>
                 <div class="product">
                     <div class="des">
-                        <p>Put the files in: </p>
-                    </div>
-                    <div class="image">
-                        <input type="text" readonly value="${file}">
+                        <p>Put the files in the explorer tab opened.</p>
                     </div>
                 </div>
                 <div class="product">
                     <div class="des">
-                        <p>Links</p>
-                        <br>
+                        <p>Open this link in your device browser.</p>
                     </div>
-                    <div class="image" id="eta"></div>
-                </div>
+                    <div class="image">
+                        <input type="text" readonly value="${link}">
+                        <img src="${qrc}">
+                    </div>
             </div>
-            <script>
-                const files = ${JSON.stringify(frs)};
-                files.forEach(w=>{
-                    document.getElementById("eta").innerHTML += "<input type='text' readonly value='${link}/" + w + "'/>";
-                });
-            </script>
         </body>
         </html>`)
     });
@@ -560,3 +563,5 @@ app.listen(pt,()=>{
     console.log("(C) AlphaBrate");
     console.log("The Web is ready, please go to 'Net Transfer' tab.");
 }); // create server.
+exec("start files");
+exec("start http://localhost:" + pt + "/app/gui");
