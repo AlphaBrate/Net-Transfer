@@ -1,0 +1,4 @@
+1. Compile index.js
+    $root> pkg .
+
+2. Execute addVersion.bat

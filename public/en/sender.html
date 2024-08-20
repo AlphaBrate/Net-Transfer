@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Net Transfer</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://alb-cdn.web.app/popupjs/pu.min.css">
+</head>
+
+<body>
+    <div class="body">
+        <h1>NET TRANSFER</h1>
+        <p><b>Sender & Receiver</b></p>
+        <p>
+            <b>Net Transfer</b> is a simple and easy way to transfer files between your devices under the same network.
+        </p>
+        <div class="product">
+            <div class="des">
+                <p>Put the files in the explorer tab opened or drop file here.
+                </p>
+                <br>
+                <div class="spinner"></div>
+                <label for="dropFile">
+                    Select File
+                </label>
+                <input type="file" name="dropFile" id="dropFile">
+            </div>
+        </div>
+        <p>
+            Only want to receive files? <a href="/">Click here</a>
+        </p>
+        <div class="product">
+            <div class="des">
+                <p>Open this link in your device browser.</p>
+            </div>
+            <div class="image">
+                <input type="text" readonly value="[_link_]">
+                <img src="[_qrc_]">
+            </div>
+        </div>
+        <div id="eta"></div>
+    </div>
+    <p class="footer">"NET TRANSFER" Project.
+        <br>© AlphaBrate 2022-2024 under the APEL.
+    </p>
+    <div class="margin-bottom"></div>
+    <script src="https://alb-cdn.web.app/popupjs/pu.min.js"></script>
+    <script>
+        const files = [_frs_];
+    </script>
+    <script src="/app/sender.js"></script>
+</body>
+
+</html>
