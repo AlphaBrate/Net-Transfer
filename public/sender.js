@@ -16,8 +16,6 @@ files.forEach(w => {
 let file;
 document.getElementById('dropFile').addEventListener('change', function () {
     file = this.files[0];
-
-
     if (file) {
         document.querySelector('.spinner').classList.add('show');
         const formData = new FormData();
@@ -60,29 +58,27 @@ function del(e) {
         buttons = [
             {
                 'text': 'Delete',
-                callback: () => {
-                    setTimeout(() => {
-                        if (toDel.split('.')[toDel.split('.').length - 1] === pujs.popup.value) {
-                            fetch('/delete/' + toDel, {
-                                method: 'DELETE'
-                            }).then(data => data.json()).then(data => {
-                                if (data.del == toDel) {
-                                    e.parentElement.remove();
-                                    pujs.alert('File deleted.', 'success');
-                                }
-                            }).catch(err => {
-                                location.reload();
-                            });
-                        } else {
-                            pujs.alert('File extension does not match.', 'error');
-                        }
-                    }, 1)
+                callback: (e) => {
+                    if (toDel.split('.')[toDel.split('.').length - 1] === e[0]) {
+                        fetch('/delete/' + toDel, {
+                            method: 'DELETE'
+                        }).then(data => data.json()).then(data => {
+                            if (data.del == toDel) {
+                                e.parentElement.remove();
+                                pujs.alert('File deleted.', 'success');
+                            }
+                        }).catch(err => {
+                            location.reload();
+                        });
+                    } else {
+                        pujs.alert('File extension does not match.', 'error');
+                    }
                 }
             },
             {
                 'text': 'Cancel',
                 callback: () => { },
-                color: 'var(--red)'
+                color: 'var(--pu-red)'
             }],
         'horiz',
         [{ placeholder: 'Type here' }])

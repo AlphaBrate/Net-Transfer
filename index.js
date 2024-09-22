@@ -1,15 +1,15 @@
-// Part of net transfer project, under MIT License.
-// (c) AlphaBrate 2022.
+// Part of net transfer project, under APEL.
+// (c) AlphaBrate 2022 - 2024.
 const fs = require('fs'); // use to read file
 const QRCode = require('qrcode');
 const express = require('express'); // localhost server
 const { networkInterfaces, type } = require('os'); // use to get user ipv4
-const glob = require('glob'); // use to read path
 const nets = networkInterfaces(); // return of network interface
 const results = Object.create(null); // defind result
 const { exec } = require('child_process');
 const multer = require('multer');
 const path = require('path');
+const socket = require('socket.io');
 
 // Set storage
 const storage = multer.diskStorage({
@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
         cb(null, 'files')
     },
     filename: function (req, file, cb) {
-        cb(null, file.originalname)
+        cb(null, Buffer.from(file.originalname, 'latin1').toString('utf8'));
     }
 });
 
@@ -56,29 +56,42 @@ app.get('/:file', (req, res) => {
 app.delete('/delete/:file', (req, res) => {
     let file = req.params.file;
     fs.unlinkSync('files/' + file);
+
+    io.emit('del_file', { file: file });
+
     res.json({ del: file });
 });
 
 app.get('/', (req, res) => {
     frs = []; // List of files
-    glob('files/*', function (er, files) {
-        files.forEach(w => {
-            frs.push(w.split('files/')[1]);
-        });
-        let html = replceVariableToFile('public/en/receiver.html', { frs: frs });
-        res.send(html);
+
+    // Get all files in the folder with fs, and push it to frs sorted by time added, lastest the first
+    fs.readdirSync('files').sort((a, b) => {
+        return fs.statSync('files/'
+            + b).mtime.getTime() - fs.statSync('files/' + a).mtime.getTime();
+    }
+    ).forEach(w => {
+        frs.push(w);
     });
+    // Replace the variable in the file
+    let html = replceVariableToFile('public/en/receiver.html', { frs: frs });
+
+    // Send the file
+    res.send(html);
 });
 
 app.get('/app/sender', (req, res) => {
     frs = [];
-    glob('files/*', function (er, files) {
-        files.forEach(w => {
-            frs.push(w.split('files/')[1]);
-        });
-        let html = replceVariableToFile('public/en/sender.html', { link: link, qrc: qrc, frs: frs });
-        res.send(html);
+    fs.readdirSync('files').sort((a, b) => {
+        return fs.statSync('files/'
+            + b).mtime.getTime() - fs.statSync('files/' + a).mtime.getTime();
+    }).forEach(w => {
+        frs.push(w);
     });
+
+    let html = replceVariableToFile('public/en/sender.html', { link: link, frs: frs, qrc: qrc });
+
+    res.send(html);
 });
 
 app.get('/app/:file.:ext', (req, res) => {
@@ -88,6 +101,9 @@ app.get('/app/:file.:ext', (req, res) => {
 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
+
+    io.emit('new_file', { file: req.file.originalname });
+
     res.json({ file: req.file });
 });
 
@@ -100,11 +116,9 @@ function replceVariableToFile(file, v = {}) {
     return data;
 }
 
-app.listen(pt, () => {
-    console.log('(C) AlphaBrate');
-    console.log('The Web is ready, please go to "Net Transfer" tab.');
-});
+const io = socket(app.listen(pt, () => {
+    console.log('© AlphaBrate 2022 - 2024, under APEL.');
+}), { cors: { origin: '*' } });
 
-exec('start files');
 exec('start http://localhost:' + pt + '/app/sender');
 exec('mkdir files')
