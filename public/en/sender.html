@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Net Transfer</title>
-    <link rel="stylesheet" href="https://alb-nt.web.app/style.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://alb-cdn.web.app/popupjs/pu.min.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 </head>
@@ -18,16 +18,16 @@
         <p>
             <b>Net Transfer</b> is a simple and easy way to transfer files between your devices under the same network.
         </p>
-        <div class="product">
+        <div class="product drop">
             <div class="des">
                 <p>Put the files in the explorer tab opened or drop file here.
                 </p>
                 <br>
                 <div class="spinner"></div>
                 <label for="dropFile">
-                    Select File
+                    Select Files
                 </label>
-                <input type="file" name="dropFile" id="dropFile">
+                <input type="file" name="dropFile" id="dropFile" multiple="multiple">
             </div>
         </div>
         <p>
@@ -39,7 +39,10 @@
             </div>
             <div class="image">
                 <input type="text" readonly value="[_link_]">
-                <img src="[_qrc_]">
+                <div class="relative">
+                    <img class="qr" src="[_qrc_]">
+                    <img src="/qrcode.svg" class="qr-frame">
+                </div>
             </div>
         </div>
         <div id="eta"></div>

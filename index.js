@@ -36,20 +36,36 @@ for (const name of Object.keys(nets)) { // geting ip
         }
     }
 }
-var qrc;
+let qrc;
 const ipv4 = results[Object.keys(results)[0]][0]; // ipv4 of user
 
 const app = express(); //
 app.use(express.static('files')); // use folder: files as the static lib.
+
+// Get ports in use
+
 const pt = 1345; // port
 const link = 'http://' + ipv4 + ':' + pt; // generate the link
 
-QRCode.toDataURL(link, function (err, url) {
+QRCode.toDataURL(link, {
+    errorCorrectionLevel: 'H',
+    type: 'image/png',
+    quality: 1,
+    margin: 1,
+    width: 500,
+    color: {
+        dark: '#000000',
+        light: '#ffffff00'
+    }
+}, function (err, url) {
     qrc = url;
 });
 
 app.get('/:file', (req, res) => {
     let file = req.params.file;
+
+    // If the file is not found, send 404
+
     res.sendFile(__dirname + '/public/' + file);
 });
 
@@ -73,8 +89,8 @@ app.get('/', (req, res) => {
     ).forEach(w => {
         frs.push(w);
     });
-    // Replace the variable in the file
-    let html = replceVariableToFile('public/en/receiver.html', { frs: frs });
+    // Replace the letiable in the file
+    let html = replceletiableToFile('public/en/receiver.html', { frs: frs });
 
     // Send the file
     res.send(html);
@@ -89,7 +105,7 @@ app.get('/app/sender', (req, res) => {
         frs.push(w);
     });
 
-    let html = replceVariableToFile('public/en/sender.html', { link: link, frs: frs, qrc: qrc });
+    let html = replceletiableToFile('public/en/sender.html', { link: link, frs: frs, qrc: qrc });
 
     res.send(html);
 });
@@ -107,9 +123,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.json({ file: req.file });
 });
 
-function replceVariableToFile(file, v = {}) {
+function replceletiableToFile(file, v = {}) {
     let data = fs.readFileSync(path.join(__dirname, file), 'utf8');
-    // replace [_VAR_]
+    // replace [_let_]
     for (let key in v) {
         data = data.replace(new RegExp('\\[_' + key + '_\\]', 'g'), Array.isArray(v[key]) ? JSON.stringify(v[key]) : v[key]);
     }

@@ -15,16 +15,23 @@ files.forEach(w => {
 
 let file;
 document.getElementById('dropFile').addEventListener('change', function () {
-    file = this.files[0];
-    if (file) {
-        document.querySelector('.spinner').classList.add('show');
-        const formData = new FormData();
-        formData.append('file', file);
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
-        }).then(data => data.json()).then(data => {
-            document.getElementById('eta').innerHTML += `<span>
+
+    let files = this.files;
+
+    // make as forEachable
+    files = Array.from(files);
+
+    files.forEach(w => {
+        file = w;
+        if (file) {
+            document.querySelector('.spinner').classList.add('show');
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(data => data.json()).then(data => {
+                document.getElementById('eta').innerHTML += `<span>
             <div class='upper'>
                 <div class='tag'>${data.file.filename.split('.')[data.file.filename.split('.').length - 1]}</div>
                 <a target='_blank' href='/${data.file.filename}'>${data.file.filename}</a>
@@ -33,15 +40,16 @@ document.getElementById('dropFile').addEventListener('change', function () {
             <div class='lower'>
             </div>
         </span>`;
-            pujs.alert('File uploaded.', 'success');
-            document.querySelector('.spinner').classList.remove('show');
-        }).catch(err => {
-            pujs.alert('File upload failed.', 'error');
-            document.querySelector('.spinner').classList.remove('show');
-        });
-    } else {
-        pujs.alert('Please select a file.');
-    }
+                pujs.alert('File uploaded.', 'success');
+                document.querySelector('.spinner').classList.remove('show');
+            }).catch(err => {
+                pujs.alert('File upload failed.', 'error');
+                document.querySelector('.spinner').classList.remove('show');
+            });
+        } else {
+            pujs.alert('Please select a file.');
+        }
+    });
 });
 
 document.querySelector('input[readonly]').addEventListener('click', function () {
@@ -83,3 +91,57 @@ function del(e) {
         'horiz',
         [{ placeholder: 'Type here' }])
 }
+
+document.querySelector('.drop').addEventListener('dragover', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelector('.drop').classList.add('show');
+});
+
+document.querySelector('.drop').addEventListener('dragleave', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelector('.drop').classList.remove('show');
+});
+
+document.querySelector('.drop').addEventListener('drop', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelector('.drop').classList.remove('show');
+    console.log(e.dataTransfer.files);
+    
+    let files = e.dataTransfer.files;
+
+    // make as forEachable
+    files = Array.from(files);
+
+    files.forEach(w => {
+        file = w;
+        if (file) {
+            document.querySelector('.spinner').classList.add('show');
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(data => data.json()).then(data => {
+                document.getElementById('eta').innerHTML += `<span>
+            <div class='upper'>
+                <div class='tag'>${data.file.filename.split('.')[data.file.filename.split('.').length - 1]}</div>
+                <a target='_blank' href='/${data.file.filename}'>${data.file.filename}</a>
+                <span class='del' onclick='del(this)'>╳</span>
+            </div>
+            <div class='lower'>
+            </div>
+        </span>`;
+                pujs.alert('File uploaded.', 'success');
+                document.querySelector('.spinner').classList.remove('show');
+            }).catch(err => {
+                pujs.alert('File upload failed.', 'error');
+                document.querySelector('.spinner').classList.remove('show');
+            });
+        } else {
+            pujs.alert('Please select a file.');
+        }
+    });
+});
