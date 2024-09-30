@@ -7,7 +7,7 @@ files.forEach(w => {
                     </div>
                     <div class='upper'>
                         <div class='tag'>${w.split('.')[w.split('.').length - 1]}</div>
-                        <a target='_blank' href='/${w}'>${w}</a>
+                        <a target='_blank' href='/file/${w}'>${w}</a>
                         <span class='del' onclick='del(this)'>╳</span>
                     </div>
                 </span>`;
@@ -19,19 +19,19 @@ let image_types = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'ti
 document.querySelectorAll('#eta a').forEach(e => {
     if (image_types.includes(e.innerText.split('.')[e.innerText.split('.').length - 1]) && previews > 0) {
         previews--;
-        e.parentElement.parentElement.querySelector('.lower').innerHTML = `<img src='/${e.innerText}' alt='${e.innerText}'>`;
+        e.parentElement.parentElement.querySelector('.lower').innerHTML = `<img src='/file/${e.innerText}' alt='${e.innerText}'>`;
     }
 });
 
 let toggles = [`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 18.2637V5.73774C5 4.14035 6.78029 3.18756 8.1094 4.07364L17.5038 10.3366C18.6913 11.1282 18.6913 12.8732 17.5039 13.6648L8.1094 19.9278C6.78029 20.8138 5 19.8611 5 18.2637Z" fill="white" stroke="white" stroke-width="0.5" stroke-linecap="round"/></svg>`,
     `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 4H7C6.44772 4 6 4.44772 6 5V19C6 19.5523 6.44772 20 7 20H8C8.55228 20 9 19.5523 9 19V5C9 4.44772 8.55228 4 8 4Z" fill="white"/><path d="M17 4H16C15.4477 4 15 4.44772 15 5V19C15 19.5523 15.4477 20 16 20H17C17.5523 20 18 19.5523 18 19V5C18 4.44772 17.5523 4 17 4Z" fill="white"/><path d="M8 4H7C6.44772 4 6 4.44772 6 5V19C6 19.5523 6.44772 20 7 20H8C8.55228 20 9 19.5523 9 19V5C9 4.44772 8.55228 4 8 4Z" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M17 4H16C15.4477 4 15 4.44772 15 5V19C15 19.5523 15.4477 20 16 20H17C17.5523 20 18 19.5523 18 19V5C18 4.44772 17.5523 4 17 4Z" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>`];
 
-let audio_types = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'aiff', 'alac', 'dsd', 'pcm', 'mp2', 'mp1', 'mka', 'm3u', 'pls', 'cda', 'mid', 'midi', 'kar', 'rmi', 'miz', 'mod', 'mo3', 's3m', 'xm', 'it', 'mtm', 'umx', 's3z', 's3z', '669', 'far', 'amf', 'okt', 'ptm', 'stm'];
+let audio_types = ['wav', 'mp3', 'mp4', 'adts', 'ogg', 'webm', 'caf', 'flac'];
 document.querySelectorAll('#eta a').forEach(e => {
-    if (audio_types.includes(e.innerText.split('.')[e.innerText.split('.').length - 1]) && previews > 0) {
+    if (audio_types.includes(e.innerText.split('.')[e.innerText.split('.').length - 1].toLowerCase()) && previews > 0) {
         previews--;
         let randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        e.parentElement.parentElement.querySelector('.lower').innerHTML = `<audio id='${randomID}'><source src='/${e.innerText}' type='audio/${e.innerText.split('.')[e.innerText.split('.').length - 1]}'></audio>
+        e.parentElement.parentElement.querySelector('.lower').innerHTML = `<audio id='${randomID}'><source src='/file/${e.innerText}' type='audio/${e.innerText.split('.')[e.innerText.split('.').length - 1]}'></audio>
                 <div class='audio' data-for='${randomID}'>
                     <div class='toggle'>${toggles[0]}</div>
                     <div class='current fixed-length'>0:00</div>
@@ -88,6 +88,9 @@ document.querySelectorAll('.lower audio').forEach(e => {
 let toDel;
 
 function del(e) {
+
+    fetch('/before-delete/', { method: 'POST' });
+
     toDel = e.parentElement.querySelector('a').innerText;
     pujs.popup(
         title = `Deleting a .${toDel.split('.')[toDel.split('.').length - 1]} File`,
@@ -96,7 +99,7 @@ function del(e) {
             {
                 'text': 'Delete',
                 callback: (e) => {
-                    if (toDel.split('.')[toDel.split('.').length - 1] === e[0]) {
+                    if (toDel.split('.')[toDel.split('.').length - 1].toLowerCase() === e[0].toLowerCase()) {
                         fetch('/delete/' + toDel, {
                             method: 'DELETE'
                         }).then(data => data.json()).then(data => {
@@ -162,26 +165,26 @@ socket.on('new_file', data => {
     let file = data.file;
     let tag = file.split('.')[file.split('.').length - 1];
     let a = document.createElement('a');
-    a.href = '/' + file;
+    a.href = '/file' + file;
     a.innerText = file;
     let span = document.createElement('span');
     span.innerHTML = `<div class='lower'></div>
                     <div class='upper'>
                         <div class='tag'>${tag}</div>
-                        <a target='_blank' href='/${file}'>${file}</a>
+                        <a target='_blank' href='/file/${file}'>${file}</a>
                         <span class='del' onclick='del(this)'>╳</span>
                     </div>`;
     eta.prepend(span);
 
     if (image_types.includes(tag) && previews > 0) {
         previews--;
-        span.querySelector('.lower').innerHTML = `<img src='/${file}' alt='${file}'>`;
+        span.querySelector('.lower').innerHTML = `<img src='/file/${file}' alt='${file}'>`;
     }
 
     if (audio_types.includes(tag) && previews > 0) {
         previews--;
         let randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        span.querySelector('.lower').innerHTML = `<audio id='${randomID}'><source src='/${file}' type='audio/${tag}'></audio>
+        span.querySelector('.lower').innerHTML = `<audio id='${randomID}'><source src='/file/${file}' type='audio/${tag}'></audio>
                 <div class='audio' data-for='${randomID}'>
                     <div class='toggle'>${toggles[0]}</div>
                     <div class='current fixed-length'>0:00</div>
@@ -196,11 +199,46 @@ socket.on('new_file', data => {
         document.getElementById(randomID).addEventListener('loadedmetadata', function () {
             this.parentElement.querySelector('.duration').innerText = '-' + new Date(this.duration * 1000).toISOString().substr(14, 5);
 
+            this.parentElement.querySelector('.toggle').addEventListener('click', function () {
+                let audio = document.getElementById(this.parentElement.getAttribute('data-for'));
+                if (audio.paused) {
+                    audio.play();
+                    this.innerHTML = toggles[1];
+                } else {
+                    audio.pause();
+                    this.innerHTML = toggles[0];
+                }
+            });
+
             // remove the first zero
             if (this.parentElement.querySelector('.duration').innerText.startsWith('-0')) {
                 this.parentElement.querySelector('.duration').innerText = '-' + this.parentElement.querySelector('.duration').innerText.substring(2);
             }
         });
+
+        document.getElementById(randomID).addEventListener('timeupdate', function () {
+            let e = document.getElementById(randomID);
+            let range = e.parentElement.querySelector('input[type=range].timeLineRange');
+            range.value = e.currentTime * 100 / e.duration;
+            e.parentElement.querySelector('.current').innerText = new Date(e.currentTime * 1000).toISOString().substr(14, 5);
+            e.parentElement.querySelector('.duration').innerText = '-' + new Date((e.duration - e.currentTime) * 1000).toISOString().substr(14, 5);
+
+            // remove the first zero
+            if (e.parentElement.querySelector('.current').innerText.startsWith('0')) {
+                e.parentElement.querySelector('.current').innerText = e.parentElement.querySelector('.current').innerText.substring(1);
+            }
+
+            if (e.parentElement.querySelector('.duration').innerText.startsWith('-0')) {
+                e.parentElement.querySelector('.duration').innerText = '-' + e.parentElement.querySelector('.duration').innerText.substring(2);
+            }
+
+            // change sibling range value
+            e.parentElement.querySelector('input[type=range].top').value = range.value;
+        });
+
+        // change values
+
+
 
         // color border
         span.classList.add('color-border');
@@ -211,13 +249,20 @@ socket.on('new_file', data => {
     }
 });
 
-socket.on('del_file', data => {
-    let file = data.file;
-    document.querySelectorAll('#eta a').forEach(e => {
-        if (e.innerText == file) {
-            e.parentElement.remove();
-        }
-    });
+socket.on('before_del_file', () => {
+    // Stop all audio and notify the user
+    try {
+        document.querySelectorAll('audio').forEach(e => {
+            e.pause();
+        });
+
+        pujs.alert('A file is being deleted. Audio files are stopped.', 'error');
+
+    } catch { }
+});
+
+socket.on('del_file', () => {
+    location.reload();
 });
 
 // on connection

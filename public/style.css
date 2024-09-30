@@ -619,3 +619,12 @@ input[type="file"] {
     border: 1px solid lightgreen;
     box-shadow: 0 0 10px lightgreen;
 }
+
+.color-gray {
+    color: gray;
+}
+
+.cursor.pointer {
+    cursor: pointer;
+    user-select: none;
+}

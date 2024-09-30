@@ -5,7 +5,7 @@ files.forEach(w => {
     document.getElementById('eta').innerHTML += `<span>
             <div class='upper'>
                 <div class='tag'>${w.split('.')[w.split('.').length - 1]}</div>
-                <a target='_blank' href='/${w}'>${w}</a>
+                <a target='_blank' href='/file/${w}'>${w}</a>
                 <span class='del' onclick='del(this)'>╳</span>
             </div>
             <div class='lower'>
@@ -34,7 +34,7 @@ document.getElementById('dropFile').addEventListener('change', function () {
                 document.getElementById('eta').innerHTML += `<span>
             <div class='upper'>
                 <div class='tag'>${data.file.filename.split('.')[data.file.filename.split('.').length - 1]}</div>
-                <a target='_blank' href='/${data.file.filename}'>${data.file.filename}</a>
+                <a target='_blank' href='/file/${data.file.filename}'>${data.file.filename}</a>
                 <span class='del' onclick='del(this)'>╳</span>
             </div>
             <div class='lower'>
@@ -59,6 +59,7 @@ document.querySelector('input[readonly]').addEventListener('click', function () 
 });
 
 function del(e) {
+    fetch('/before-delete/', { method: 'POST' });
     toDel = e.parentElement.querySelector('a').innerText;
     pujs.popup(
         title = `Deleting a .${toDel.split('.')[toDel.split('.').length - 1]} File`,
@@ -109,7 +110,7 @@ document.querySelector('.drop').addEventListener('drop', function (e) {
     e.stopPropagation();
     document.querySelector('.drop').classList.remove('show');
     console.log(e.dataTransfer.files);
-    
+
     let files = e.dataTransfer.files;
 
     // make as forEachable
@@ -128,7 +129,7 @@ document.querySelector('.drop').addEventListener('drop', function (e) {
                 document.getElementById('eta').innerHTML += `<span>
             <div class='upper'>
                 <div class='tag'>${data.file.filename.split('.')[data.file.filename.split('.').length - 1]}</div>
-                <a target='_blank' href='/${data.file.filename}'>${data.file.filename}</a>
+                <a target='_blank' href='/file/${data.file.filename}'>${data.file.filename}</a>
                 <span class='del' onclick='del(this)'>╳</span>
             </div>
             <div class='lower'>
