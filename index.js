@@ -104,7 +104,29 @@ app.post('/before-delete', (req, res) => {
     io.emit('before_del_file');
 });
 
+const supportedLanguages = ['en', 'zh-cn', 'zh-tw', 'zh-hk', 'zh'];
+const rewriteLanguages = { 'zh': 'zh-cn' };
+
 app.get('/', (req, res) => {
+
+    let language = 'en';
+    if (req.headers['accept-language']) {
+        let lang = req.headers['accept-language'].split(',')[0].split('-')[0];
+        if (supportedLanguages.includes(lang)) {
+            language = lang;
+        }
+    }
+
+    // Get query language
+    let query = req.query.lang;
+    if (query && supportedLanguages.includes(query)) {
+        language = query;
+    }
+
+    // Rewrite the language
+    if (rewriteLanguages[language]) {
+        language = rewriteLanguages[language];
+    }
 
     frs = []; // List of files
 
@@ -117,13 +139,33 @@ app.get('/', (req, res) => {
         frs.push(w);
     });
     // Replace the letiable in the file
-    let html = replceletiableToFile('public/en/receiver.html', { frs: frs});
+    let html = replceletiableToFile('public/' + language + '/receiver.html', { frs: frs });
 
     // Send the file
     res.send(html);
 });
 
 app.get('/app/sender', (req, res) => {
+
+    let language = 'en';
+    if (req.headers['accept-language']) {
+        let lang = req.headers['accept-language'].split(',')[0].split('-')[0];
+        if (supportedLanguages.includes(lang)) {
+            language = lang;
+        }
+    }
+
+    // Get query language
+    let query = req.query.lang;
+    if (query && supportedLanguages.includes(query)) {
+        language = query;
+    }
+
+    // Rewrite the language
+    if (rewriteLanguages[language]) {
+        language = rewriteLanguages[language];
+    }
+
     frs = [];
     fs.readdirSync('files').sort((a, b) => {
         return fs.statSync('files/'
@@ -132,7 +174,7 @@ app.get('/app/sender', (req, res) => {
         frs.push(w);
     });
 
-    let html = replceletiableToFile('public/en/sender.html', { link: link, frs: frs, qrc: qrc });
+    let html = replceletiableToFile('public/' + language + '/sender.html', { link: link, frs: frs, qrc: qrc });
 
     res.send(html);
 });
@@ -145,7 +187,7 @@ app.get('/app/:file.:ext', (req, res) => {
 
 app.post('/upload', upload.single('file'), (req, res) => {
     const utf8FileName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
-    
+
     io.emit('new_file', { file: utf8FileName });
 
     res.json({ file: req.file });
@@ -162,7 +204,7 @@ app.post('/server', (req, res) => {
     ).forEach(w => {
         frs.push(w);
     });
-    
+
     res.json({
         'server': {
             'ipv4': ipv4,

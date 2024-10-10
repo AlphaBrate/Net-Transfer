@@ -93,11 +93,11 @@ function del(e) {
 
     toDel = e.parentElement.querySelector('a').innerText;
     pujs.popup(
-        title = `Deleting a .${toDel.split('.')[toDel.split('.').length - 1]} File`,
-        message = `You are trying to delete<br><b>${toDel}</b>Please type the file extension to confirm the deletion.`,
+        title = l('del-title', {VARIABLE: toDel.split('.')[toDel.split('.').length - 1]}),
+        message = l('del-content', {VARIABLE: toDel}),
         buttons = [
             {
-                'text': 'Delete',
+                'text': l('Delete'),
                 callback: (e) => {
                     if (toDel.split('.')[toDel.split('.').length - 1].toLowerCase() === e[0].toLowerCase()) {
                         fetch('/delete/' + toDel, {
@@ -105,23 +105,23 @@ function del(e) {
                         }).then(data => data.json()).then(data => {
                             if (data.del == toDel) {
                                 e.parentElement.parentElement.remove();
-                                pujs.alert('File deleted.', 'success');
+                                pujs.alert(l('File deleted.'), 'success');
                             }
                         }).catch(err => {
                             location.reload();
                         });
                     } else {
-                        pujs.alert('File extension does not match.', 'error');
+                        pujs.alert(l('File extension does not match.'), 'error');
                     }
                 }
             },
             {
-                'text': 'Cancel',
+                'text': l('Cancel'),
                 callback: () => { },
                 color: 'var(--pu-red)'
             }],
         'horiz',
-        [{ placeholder: 'Type here' }])
+        [{ placeholder: l('Type here') }])
 }
 
 document.querySelectorAll('input[type=range].top').forEach(e => {
@@ -256,7 +256,7 @@ socket.on('before_del_file', () => {
             e.pause();
         });
 
-        pujs.alert('A file is being deleted. Audio files are stopped.', 'error');
+        pujs.alert(l('A file is being deleted. Audio files are stopped.'), 'error');
 
     } catch { }
 });

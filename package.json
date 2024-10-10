@@ -26,7 +26,8 @@
       "node14-win",
       "node14-macos"
     ],
-    "outputPath": "dist"
+    "outputPath": "dist",
+    "compression": "GZIP"
   },
   "bin": {
     "nettransfer": "index.js"

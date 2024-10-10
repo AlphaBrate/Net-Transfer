@@ -55,18 +55,18 @@ document.getElementById('dropFile').addEventListener('change', function () {
 document.querySelector('input[readonly]').addEventListener('click', function () {
     this.select();
     document.execCommand('copy');
-    pujs.alert('Link copied to clipboard.', 'success');
+    pujs.alert(l('Link copied to clipboard.'), 'success');
 });
 
 function del(e) {
     fetch('/before-delete/', { method: 'POST' });
     toDel = e.parentElement.querySelector('a').innerText;
     pujs.popup(
-        title = `Deleting a .${toDel.split('.')[toDel.split('.').length - 1]} File`,
-        message = `You are trying to delete<br><b>${toDel}</b>Please type the file extension to confirm the deletion.`,
+        title = l('del-title', {VARIABLE: toDel.split('.')[toDel.split('.').length - 1]}),
+        message = l('del-content', {VARIABLE: toDel}),
         buttons = [
             {
-                'text': 'Delete',
+                'text': l('Delete'),
                 callback: (e) => {
                     if (toDel.split('.')[toDel.split('.').length - 1] === e[0]) {
                         fetch('/delete/' + toDel, {
@@ -74,23 +74,23 @@ function del(e) {
                         }).then(data => data.json()).then(data => {
                             if (data.del == toDel) {
                                 e.parentElement.remove();
-                                pujs.alert('File deleted.', 'success');
+                                pujs.alert(l('File deleted.'), 'success');
                             }
                         }).catch(err => {
                             location.reload();
                         });
                     } else {
-                        pujs.alert('File extension does not match.', 'error');
+                        pujs.alert(l('File extension does not match.'), 'error');
                     }
                 }
             },
             {
-                'text': 'Cancel',
+                'text': l('Cancel'),
                 callback: () => { },
                 color: 'var(--pu-red)'
             }],
         'horiz',
-        [{ placeholder: 'Type here' }])
+        [{ placeholder: l('Type here') }])
 }
 
 document.querySelector('.drop').addEventListener('dragover', function (e) {
@@ -135,14 +135,14 @@ document.querySelector('.drop').addEventListener('drop', function (e) {
             <div class='lower'>
             </div>
         </span>`;
-                pujs.alert('File uploaded.', 'success');
+                pujs.alert(l('File uploaded.'), 'success');
                 document.querySelector('.spinner').classList.remove('show');
             }).catch(err => {
-                pujs.alert('File upload failed.', 'error');
+                pujs.alert(l('File upload failed.'), 'error');
                 document.querySelector('.spinner').classList.remove('show');
             });
         } else {
-            pujs.alert('Please select a file.');
+            pujs.alert(l('Please select a file.'));
         }
     });
 });
