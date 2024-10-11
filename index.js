@@ -11,6 +11,8 @@ const multer = require('multer');
 const path = require('path');
 const socket = require('socket.io');
 
+const pathHere = (process.pkg) ? process.cwd() : __dirname;
+
 // Set storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -47,7 +49,6 @@ let qrc;
 const ipv4 = results[Object.keys(results)[0]][0]; // ipv4 of user
 
 const app = express(); //
-app.use(express.static('public')); // use folder: files as the static lib.
 
 // blocked by CORS policy: Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response.
 
@@ -83,8 +84,14 @@ app.get('/file/:file', (req, res) => {
     // If the file is not found, send 404
 
     try {
-        res.sendFile(__dirname + '/files/' + file)
+        res.sendFile(pathHere + '/files/' + file)
     } catch { }
+});
+
+app.get('/:file.:ext', (req, res) => {
+    let file = req.params.file;
+    let ext = req.params.ext;
+    res.sendFile(__dirname + '/public/' + file + '.' + ext);
 });
 
 app.delete('/delete/:file', (req, res) => {
@@ -138,8 +145,8 @@ app.get('/', (req, res) => {
     ).forEach(w => {
         frs.push(w);
     });
-    // Replace the letiable in the file
-    let html = replceletiableToFile('public/' + language + '/receiver.html', { frs: frs });
+    // Replace the variable in the file
+    let html = replceVariableToFile('public/' + language + '/receiver.html', { frs: frs });
 
     // Send the file
     res.send(html);
@@ -174,7 +181,7 @@ app.get('/app/sender', (req, res) => {
         frs.push(w);
     });
 
-    let html = replceletiableToFile('public/' + language + '/sender.html', { link: link, frs: frs, qrc: qrc });
+    let html = replceVariableToFile('public/' + language + '/sender.html', { link: link, frs: frs, qrc: qrc });
 
     res.send(html);
 });
@@ -193,29 +200,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.json({ file: req.file });
 });
 
-app.post('/server', (req, res) => {
-    frs = []; // List of files
-
-    // Get all files in the folder with fs, and push it to frs sorted by time added, lastest the first
-    fs.readdirSync('files').sort((a, b) => {
-        return fs.statSync('files/'
-            + b).mtime.getTime() - fs.statSync('files/' + a).mtime.getTime();
-    }
-    ).forEach(w => {
-        frs.push(w);
-    });
-
-    res.json({
-        'server': {
-            'ipv4': ipv4,
-            'link': link
-        },
-        'files': frs,
-        'status': 'success'
-    });
-});
-
-function replceletiableToFile(file, v = {}) {
+function replceVariableToFile(file, v = {}) {
     let data = fs.readFileSync(path.join(__dirname, file), 'utf8');
     // replace [_let_]
     for (let key in v) {

@@ -19,15 +19,12 @@
   },
   "pkg": {
     "scripts": "index.js",
-    "assets": [
-      "public/**/*"
-    ],
+    "assets": "public/**/*",
     "targets": [
       "node14-win",
       "node14-macos"
     ],
-    "outputPath": "dist",
-    "compression": "GZIP"
+    "outputPath": "dist"
   },
   "bin": {
     "nettransfer": "index.js"
