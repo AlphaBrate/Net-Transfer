@@ -80,3 +80,65 @@ document.querySelectorAll('a').forEach(e => {
         e.href += location.search;
     }
 });
+
+// Fetch localhost with the same port
+let is_this_local = false;
+
+let port = location.port;
+if (port === '') {
+    port = '1345';
+}
+
+fetch(`http://localhost:${port}/server-status`,
+    {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-cache',
+        redirect: 'follow',
+        signal: AbortSignal.timeout(1000) // Max Timeout
+    }
+).then(data => data.json()).then(data => {
+    is_this_local = true;
+    console.log(data);
+    if (data.update) {
+        if (data.update.update) {
+            pujs.popup(
+                title = l('Update Available'),
+                message = l('An update of [VARIABLE] is available<br>and is ready to be installed.', { VARIABLE: data.update.latestVersion }),
+                buttons = [
+                    {
+                        'text': l('Update'),
+                        callback: () => {
+                            pujs.popup(
+                                l('Update process started'),
+                                l('Close this page and wait for the server to update.'),
+                                [
+                                    {
+                                        'text': l('Close'),
+                                        'callback': () => {
+
+                                            fetch('/update', {
+                                                method: 'POST'
+                                            });
+                                            window.close();
+                                        }
+                                    }
+                                ],
+                                'vert',
+                            );
+                        }
+                    },
+                    {
+                        'text': l('Cancel'),
+                        callback: () => {
+                            pujs.alert(l('You can disable this notification in the settings.'), 'success');
+                        },
+                        color: 'var(--pu-red)'
+                    }],
+                'horiz'
+            );
+        }
+    }
+}).catch(err => {
+    is_this_local = false;
+});

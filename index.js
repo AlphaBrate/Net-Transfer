@@ -11,6 +11,8 @@ const multer = require('multer');
 const path = require('path');
 const socket = require('socket.io');
 
+const fetch = require('node-fetch');
+
 const pathHere = (process.pkg) ? process.cwd() : __dirname;
 
 // Set storage
@@ -22,6 +24,10 @@ const storage = multer.diskStorage({
         cb(null, Buffer.from(file.originalname, 'latin1').toString('utf8'));
     }
 });
+
+if (!fs.existsSync('files')) {
+    fs.mkdirSync('files');
+}
 
 // Empty the files folder except the default.svg
 fs.readdirSync('files').forEach(file => {
@@ -78,6 +84,42 @@ QRCode.toDataURL(link, {
     qrc = url;
 });
 
+let server = {
+    'ipv4': ipv4,
+    'port': pt,
+    'link': link,
+    'qrc': qrc,
+    'status': 'online',
+    'version': 'v2.2.1'
+};
+
+const releaseUrl = 'https://api.github.com/repos/AlphaBrate/Net-Transfer/releases/latest';
+let latestVersion;
+let currentVersion = server.version;
+
+let versionCheckFetchDone = false;
+
+fetch(releaseUrl)
+    .then(res => res.json())
+    .then(json => {
+        latestVersion = json.tag_name;
+        versionCheckFetchDone = true;
+        if (json.tag_name != currentVersion) {
+            console.log('New version available: ' + `${currentVersion} -> ${json.tag_name}`);
+            server.update = {
+                update: true,
+                currentVersion: currentVersion,
+                latestVersion: latestVersion
+            };
+        } else {
+            server.update = {
+                update: false,
+                currentVersion: currentVersion,
+                latestVersion: latestVersion
+            };
+        }
+    });
+
 app.get('/file/:file', (req, res) => {
     let file = req.params.file;
 
@@ -109,6 +151,21 @@ app.delete('/delete/:file', (req, res) => {
 
 app.post('/before-delete', (req, res) => {
     io.emit('before_del_file');
+});
+
+app.get('/server-status', (req, res) => {
+    if (!versionCheckFetchDone) {
+        function check() {
+            if (!versionCheckFetchDone) {
+                setTimeout(check, 100);
+            } else {
+                res.json(server);
+            }
+        }
+        check();
+    } else {
+        res.json(server);
+    }
 });
 
 const supportedLanguages = ['en', 'zh-cn', 'zh-tw', 'zh-hk', 'zh'];
@@ -150,6 +207,106 @@ app.get('/', (req, res) => {
 
     // Send the file
     res.send(html);
+});
+
+app.post('/update', (req, res) => {
+    const batch = `@echo off
+
+echo (C) AlphaBrate 2024
+echo Net-Transfer Updater
+
+@REM Get parameters from the command line
+set currentVersion=%1
+set latestVersion=%2
+
+set caller=%3
+
+@REM If no caller, transfer.exe is calling the updater
+if "%caller%"=="" (
+    set caller=transfer.exe
+)
+
+@REM Check if the current version is not provided
+if "%currentVersion%"=="" (
+    echo Current version is not provided
+    pause
+
+    @REM Start the caller with an error message
+    start %caller% update failed "current_version_not_provided"
+
+    exit /b 1
+)
+
+@REM Check if the latest version is not provided
+if "%latestVersion%"=="" (
+    echo Latest version is not provided
+    pause
+
+    @REM Start the caller with an error message
+    start %caller% update failed "latest_version_not_provided"
+
+    exit /b 1
+)
+
+echo Current version: %currentVersion%
+echo Latest version: %latestVersion%
+
+echo.
+
+@REM Check if the current version is the latest version
+if "%currentVersion%"=="%latestVersion%" (
+    echo Net-Transfer is already up to date
+    pause
+
+    start %caller% update success %currentVersion% %latestVersion%
+
+    exit /b 1
+
+    del "%~f0"
+)
+
+if "%currentVersion%" LSS "%latestVersion%" (
+    echo Updating Net-Transfer...
+    @REM Download the latest version with additional options for debugging
+    curl -o transfer.exe -L --retry 3 --retry-delay 5 --fail https://github.com/AlphaBrate/Net-Transfer/releases/download/%latestVersion%/transfer.exe
+
+    echo.
+
+    @REM Check if the download was successful
+    if %errorlevel% neq 0 (
+        echo Failed to download the latest version. Please check your internet connection or try again later.
+        pause
+
+        start %caller% update failed "download_failed"
+
+    ) else (
+        echo Net-Transfer updated successfully
+        pause
+
+        start %caller% update success %currentVersion% %latestVersion%
+
+    )
+
+    del "%~f0"
+
+    exit /b 1
+)`;
+
+    fs.writeFileSync('update.bat', batch);
+
+    res.json({ success: true });
+
+    console.log('Updating Net-Transfer...');
+
+    const command = `start update.bat ${currentVersion} ${latestVersion} transfer.exe`;
+
+    exec(command);
+
+    console.log(command);
+
+    setTimeout(() => {
+        process.exit(0);
+    }, 1000);
 });
 
 app.get('/app/sender', (req, res) => {
@@ -209,9 +366,27 @@ function replceVariableToFile(file, v = {}) {
     return data;
 }
 
+let args = {
+    'startSender': true,
+};
+
+let argv = process.argv.slice(2);
+
+if (argv.includes('--no-sender')) {
+    args.startSender = false;
+}
+
+if (argv.includes('--start-sender') && argv[argv.indexOf('--start-sender') + 1] == 'false') {
+    args.startSender = false;
+}
+
 const io = socket(app.listen(pt, () => {
     console.log('© AlphaBrate 2022 - 2024, under APEL.');
 }), { cors: { origin: '*' } });
 
-exec('start http://localhost:' + pt + '/app/sender');
-exec('mkdir files')
+
+if (args.startSender) {
+    exec('start http://localhost:' + pt + '/app/sender');
+} else {
+    console.log('Auto Start Sender is disabled');
+}
