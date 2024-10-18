@@ -10,6 +10,9 @@ const { exec } = require('child_process');
 const multer = require('multer');
 const path = require('path');
 const socket = require('socket.io');
+const bodyParser = require('body-parser');
+
+
 
 const fetch = require('node-fetch');
 
@@ -65,6 +68,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(bodyParser.json());
+
 // Get ports in use
 
 const pt = 1345; // port
@@ -90,7 +95,7 @@ let server = {
     'link': link,
     'qrc': qrc,
     'status': 'online',
-    'version': 'v2.2.1'
+    'version': 'v2.2.2'
 };
 
 const releaseUrl = 'https://api.github.com/repos/AlphaBrate/Net-Transfer/releases/latest';
@@ -207,6 +212,105 @@ app.get('/', (req, res) => {
 
     // Send the file
     res.send(html);
+});
+
+app.get('/settings', (req, res) => {
+    let language = 'en';
+
+    if (req.headers['accept-language']) {
+        let lang = req.headers['accept-language'].split(',')[0].split('-')[0];
+        if (supportedLanguages.includes(lang)) {
+            language = lang;
+        }
+    }
+
+    // Get query language
+
+    let query = req.query.lang;
+    if (query && supportedLanguages.includes(query)) {
+        language = query;
+    }
+
+    // Rewrite the language
+
+    if (rewriteLanguages[language]) {
+        language = rewriteLanguages[language];
+    }
+
+    let html = replceVariableToFile('public/' + language + '/settings.html', { link: link });
+
+    res.send(html);
+});
+
+app.get('/settings/.json', (req, res) => {
+    // if files/.nt-settings.json is not found, create it from public/settings.json
+    if (!fs.existsSync(pathHere + '/files/.nt-settings.json')) {
+        fs.copyFileSync(__dirname + '/public/settings.json', pathHere + '/files/.nt-settings.json');
+    }
+
+    fs.readFile(pathHere + '/files/.nt-settings.json', 'utf8', (err, data) => {
+        if (err) {
+            res.json({ error: 'Failed to read settings.json' });
+        } else {
+            res.json(JSON.parse(data));
+        }
+    });
+});
+
+app.get('/settings/:destiny', (req, res) => {
+    let destiny = req.params.destiny;
+
+    // a>b>c
+    let path = destiny.split('>');
+
+    // Get from the settings.json
+    fs.readFile(pathHere + '/files/.nt-settings.json', 'utf8', (err, data) => {
+        if (err) {
+            res.json({ error: 'Failed to read settings.json' });
+        } else {
+            let settings = JSON.parse(data);
+
+            let value = settings;
+
+            for (let i = 0; i < path.length; i++) {
+                value = value[path[i]];
+            }
+
+            res.json(value);
+        }
+    });
+});
+
+
+app.post('/writeSettings', (req, res) => {
+    // Write those values to settings.json, based on the original settings.json
+    function loopJsonWrite(origin, data) {
+        for (let key in data) {
+            if (typeof data[key] == 'object') {
+                loopJsonWrite(origin[key], data[key]);
+            } else {
+                origin[key] = data[key];
+            }
+        }
+    }
+
+    fs.readFile(pathHere + '/files/.nt-settings.json', 'utf8', (err, data) => {
+        if (err) {
+            res.json({ error: 'Failed to read settings.json' });
+        } else {
+            let settings = JSON.parse(data);
+            loopJsonWrite(settings, req.body);
+
+            fs.writeFile(pathHere + '/files/.nt-settings.json', JSON.stringify(settings, null, 4), (err) => {
+                if (err) {
+                    res.json({ error: 'Failed to write settings.json' });
+                } else {
+                    res.json({ success: true });
+                }
+            });
+        }
+    });
+
 });
 
 app.post('/update', (req, res) => {
@@ -378,6 +482,25 @@ if (argv.includes('--no-sender')) {
 
 if (argv.includes('--start-sender') && argv[argv.indexOf('--start-sender') + 1] == 'false') {
     args.startSender = false;
+}
+
+if (argv.includes('update')) {
+    // Get next argument, failed or success
+    let status = argv[argv.indexOf('update') + 1];
+    let currentVersion = argv[argv.indexOf('update') + 2];
+    let latestVersion = argv[argv.indexOf('update') + 3];
+
+    if (status == 'success') {
+        args.startSender = false;
+        exec('start http://localhost:' + pt + '/app/sender?update=success&currentVersion=' + currentVersion + '&latestVersion=' + latestVersion);
+
+        console.log(`Net-Transfer updated successfully: ${currentVersion} -> ${latestVersion}`);
+    } else {
+        args.startSender = false;
+        exec('start http://localhost:' + pt + '/app/sender?update=failed');
+
+        console.log(`Failed to update Net-Transfer: ${status}`);
+    }
 }
 
 const io = socket(app.listen(pt, () => {

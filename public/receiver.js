@@ -1,6 +1,3 @@
-pujs.setup.icons_path = 'https://alphabrate.github.io/popupjs/code/showcase/icons/';
-pujs.setup.init();
-
 files.forEach(w => {
     document.getElementById('eta').innerHTML += `<span>
                     <div class='lower'>

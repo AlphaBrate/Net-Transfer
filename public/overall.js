@@ -1,3 +1,6 @@
+pujs.setup.icons_path = 'https://alphabrate.github.io/popupjs/code/showcase/icons/';
+pujs.setup.init();
+
 const language = document.documentElement.lang;
 
 let languages = {
@@ -14,6 +17,19 @@ let languages = {
         'File uploaded.': 'File uploaded.',
         'File upload failed.': 'File upload failed.',
         'Please select a file.': 'Please select a file.',
+        'Update Available': 'Update Available',
+        'An update of [VARIABLE] is available<br>and is ready to be installed.': 'An update of [VARIABLE] is available<br>and is ready to be installed.',
+        'Update': 'Update',
+        'Close': 'Close',
+        'You can disable this notification in the settings.': 'You can disable this notification in the settings.',
+        'You are blocked': 'You are blocked',
+        "You can't config the server<br>since you are not the host.": "You can't config the server<br>since you are not the host.",
+        'Success': 'Success',
+        'The settings have been saved.': 'The settings have been saved.',
+        'Save': 'Save',
+        'Settings': 'Settings',
+        'You are the host': 'Host',
+        'Back': 'Back',
     },
     'zh-cn': {
         'del-title': '删除 .[VARIABLE] 文件',
@@ -28,6 +44,19 @@ let languages = {
         'File uploaded.': '文件已上传。',
         'File upload failed.': '文件上传失败。',
         'Please select a file.': '请选择一个文件。',
+        'Update Available': '新的更新可用',
+        'An update of [VARIABLE] is available<br>and is ready to be installed.': '[VARIABLE] 的新版本可用<br>並且已準備好安裝。',
+        'Update': '更新',
+        'Close': '关闭',
+        'You can disable this notification in the settings.': '您可以在设置中禁用此通知。',
+        'You are blocked': '你不被允许访问此页面',
+        "You can't config the server<br>since you are not the host.": '你不能配置服务器<br>因为你不是服务器主机。',
+        'Success': '成功',
+        'The settings have been saved.': '设置已保存。',
+        'Save': '保存',
+        'Settings': '设置',
+        'You are the host': '主机',
+        'Back': '返回',
     },
     'zh-tw': {
         'del-title': '刪除 .[VARIABLE] 檔案',
@@ -42,6 +71,19 @@ let languages = {
         'File uploaded.': '檔案已上傳。',
         'File upload failed.': '檔案上傳失敗。',
         'Please select a file.': '請選擇一個檔案。',
+        'Update Available': '新的更新可用',
+        'An update of [VARIABLE] is available<br>and is ready to be installed.': '[VARIABLE] 的新版本可用<br>並且已準備好安裝。',
+        'Update': '更新',
+        'Close': '關閉',
+        'You can disable this notification in the settings.': '您可以在設定中禁用此通知。',
+        'You are blocked': '你不被允許訪問此頁面',
+        "You can't config the server<br>since you are not the host.": '你不能配置服務器<br>因為你不是服務器主機。',
+        'Success': '成功',
+        'The settings have been saved.': '設定已保存。',
+        'Save': '保存',
+        'Settings': '設定',
+        'You are the host': '主機',
+        'Back': '返回',       
     },
     'zh-hk': {
         'del-title': '刪除 .[VARIABLE] 文件',
@@ -56,6 +98,19 @@ let languages = {
         'File uploaded.': '文件已上傳。',
         'File upload failed.': '文件上傳失敗。',
         'Please select a file.': '請選擇一個文件。',
+        'Update Available': '新的更新可用',
+        'An update of [VARIABLE] is available<br>and is ready to be installed.': '[VARIABLE] 的新版本可用<br>並且已準備好安裝。',
+        'Update': '更新',
+        'You can disable this notification in the settings.': '您可以在設置中禁用此通知。',
+        'Close': '關閉',
+        'You are blocked': '你不被允許訪問此頁面',
+        "You can't config the server<br>since you are not the host.": '你無法配置此服務器<br>因為你不是服務器的主機/主持。',
+        'Success': '成功',
+        'The settings have been saved.': '設置已保存。',
+        'Save': '保存',
+        'Settings': '設置',
+        'You are the host': '主機',
+        'Back': '返回',
     },
 };
 
@@ -75,11 +130,16 @@ const l = getTextOfLanguage;
 
 
 // Get all a hrefs, if no extension, add the query of this page
-document.querySelectorAll('a').forEach(e => {
-    if (!e.href.includes('.')) {
-        e.href += location.search;
-    }
-});
+function aHrefs() {
+    document.querySelectorAll('a:not([data-hrefed])').forEach(e => {
+        if (!e.href.includes('.')) {
+            e.href += location.search;
+        }
+        e.dataset.hrefed = true;
+    });
+}
+
+aHrefs();
 
 // Fetch localhost with the same port
 let is_this_local = false;
@@ -99,46 +159,74 @@ fetch(`http://localhost:${port}/server-status`,
     }
 ).then(data => data.json()).then(data => {
     is_this_local = true;
-    console.log(data);
-    if (data.update) {
-        if (data.update.update) {
-            pujs.popup(
-                title = l('Update Available'),
-                message = l('An update of [VARIABLE] is available<br>and is ready to be installed.', { VARIABLE: data.update.latestVersion }),
-                buttons = [
-                    {
-                        'text': l('Update'),
-                        callback: () => {
-                            pujs.popup(
-                                l('Update process started'),
-                                l('Close this page and wait for the server to update.'),
-                                [
-                                    {
-                                        'text': l('Close'),
-                                        'callback': () => {
 
-                                            fetch('/update', {
-                                                method: 'POST'
-                                            });
-                                            window.close();
+    // add before the first <br> of .footer
+    let footer = document.querySelector('.footer');
+
+    let before = document.createElement('span');
+
+    before.innerHTML = l('You are the host') + ' | ';
+    
+    footer.innerHTML = before.outerHTML + footer.innerHTML;
+
+    let br = footer.querySelector('br');
+    
+
+    let text = document.createElement('span');
+    text.innerHTML = ' | ' + `<a href="/settings">${l('Settings')}</a>`;
+    footer.insertBefore(text, br);
+
+    aHrefs();
+
+    try {
+        local(data);
+    } catch { }
+    fetch(`/settings/server>checkUpdate`).then(value => value.json()).then(value => {
+        if (data.update && value) {
+            if (data.update.update) {
+                pujs.popup(
+                    title = l('Update Available'),
+                    message = l('An update of [VARIABLE] is available<br>and is ready to be installed.', { VARIABLE: data.update.latestVersion }),
+                    buttons = [
+                        {
+                            'text': l('Update'),
+                            callback: () => {
+                                pujs.popup(
+                                    l('Update process started'),
+                                    l('Close this page and wait for the server to update.'),
+                                    [
+                                        {
+                                            'text': l('Close'),
+                                            'callback': () => {
+
+                                                fetch('/update', {
+                                                    method: 'POST'
+                                                });
+                                                window.close();
+                                            }
                                         }
-                                    }
-                                ],
-                                'vert',
-                            );
-                        }
-                    },
-                    {
-                        'text': l('Cancel'),
-                        callback: () => {
-                            pujs.alert(l('You can disable this notification in the settings.'), 'success');
+                                    ],
+                                    'vert',
+                                );
+                            }
                         },
-                        color: 'var(--pu-red)'
-                    }],
-                'horiz'
-            );
+                        {
+                            'text': l('Cancel'),
+                            callback: () => {
+                                pujs.alert(l('You can disable this notification in the settings.'), 'success');
+                            },
+                            color: 'var(--pu-red)'
+                        }],
+                    'horiz'
+                );
+            }
         }
-    }
+    });
+
 }).catch(err => {
     is_this_local = false;
+
+    try {
+        local();
+    } catch { }
 });
