@@ -1,5 +1,5 @@
 // Part of net transfer project, under APEL.
-// (c) AlphaBrate 2022 - 2024.
+// (c) AlphaBrate 2022 - 2025.
 const fs = require('fs'); // use to read file
 const QRCode = require('qrcode');
 const express = require('express'); // localhost server
@@ -95,7 +95,7 @@ let server = {
     'link': link,
     'qrc': qrc,
     'status': 'online',
-    'version': 'v2.2.2'
+    'version': 'v2.2.3'
 };
 
 const releaseUrl = 'https://api.github.com/repos/AlphaBrate/Net-Transfer/releases/latest';
@@ -142,7 +142,7 @@ app.get('/:file.:ext', (req, res) => {
 });
 
 app.delete('/delete/:file', (req, res) => {
-    const filePath = path.join(__dirname, 'files', req.params.file);
+    const filePath = path.join(pathHere, 'files', req.params.file);
 
     try {
         fs.unlinkSync(filePath);
@@ -205,7 +205,9 @@ app.get('/', (req, res) => {
             + b).mtime.getTime() - fs.statSync('files/' + a).mtime.getTime();
     }
     ).forEach(w => {
-        frs.push(w);
+        if (w !== '.nt-settings.json') {
+            frs.push(w);
+        }
     });
     // Replace the variable in the file
     let html = replceVariableToFile('public/' + language + '/receiver.html', { frs: frs });
@@ -281,7 +283,6 @@ app.get('/settings/:destiny', (req, res) => {
     });
 });
 
-
 app.post('/writeSettings', (req, res) => {
     // Write those values to settings.json, based on the original settings.json
     function loopJsonWrite(origin, data) {
@@ -316,7 +317,7 @@ app.post('/writeSettings', (req, res) => {
 app.post('/update', (req, res) => {
     const batch = `@echo off
 
-echo (C) AlphaBrate 2024
+echo (C) AlphaBrate 2025
 echo Net-Transfer Updater
 
 @REM Get parameters from the command line
@@ -439,7 +440,9 @@ app.get('/app/sender', (req, res) => {
         return fs.statSync('files/'
             + b).mtime.getTime() - fs.statSync('files/' + a).mtime.getTime();
     }).forEach(w => {
-        frs.push(w);
+        if (w !== '.nt-settings.json') {
+            frs.push(w);
+        }
     });
 
     let html = replceVariableToFile('public/' + language + '/sender.html', { link: link, frs: frs, qrc: qrc });
@@ -504,7 +507,7 @@ if (argv.includes('update')) {
 }
 
 const io = socket(app.listen(pt, () => {
-    console.log('© AlphaBrate 2022 - 2024, under APEL.');
+    console.log('© AlphaBrate 2022 - 2025, under APEL.');
 }), { cors: { origin: '*' } });
 
 

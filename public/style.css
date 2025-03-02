@@ -22,7 +22,7 @@
         --black-white-base: #ffffff;
         --black-white-sigf: #000000;
         --spinner: url(https://alphabrate.github.io/icons/ondark.load_ellipse.svg);
-        --stressed-bg: #363636;
+        --stressed-bg: #292727;
     }
 }
 
@@ -717,6 +717,8 @@ body>div.settings {
     margin: 3rem auto;
 }
 
+
+
 div.settings {
 
     max-width: 500px;
@@ -727,12 +729,15 @@ div.settings {
     flex-direction: column;
     justify-content: center;
 
-    gap: 2.5rem;
-
     margin: 0 auto;
+
+    margin-bottom: 1rem;
 
     .title {
         color: gray;
+        width: 75%;
+        margin: 0.2rem auto;
+        margin-top: 1rem;
     }
 
     .switch-element {
@@ -742,7 +747,30 @@ div.settings {
 
         background: var(--stressed-bg);
         padding: .5rem 1.5rem;
+
         border-radius: 17px;
+
+        border: 2px solid var(--border-color);
+
+        
+        border-bottom: none;
+    }
+
+    .switch-element:first-child {
+        border-radius: 17px 17px 0 0;
+    }
+
+    .switch-element:last-child {
+        border-radius: 0 0 17px 17px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .switch-element:first-child:last-child {
+        border-radius: 17px;
+    }
+
+    .switch-element:not(:first-child):not(:last-child) {
+        border-radius: 0;
     }
 
     .settings-value-placeholder {
@@ -757,6 +785,11 @@ div.settings {
         font-size: 1.2rem;
 
         border: none;
+    }
+
+    .rounded {
+        border-radius: 17px !important;
+        border-bottom: 2px solid var(--border-color);
     }
 }
 

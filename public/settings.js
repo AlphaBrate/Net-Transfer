@@ -45,8 +45,6 @@ const local = (data) => {
 
                     HTML.appendChild(title);
 
-                    title.style.display = 'none';
-
                     HTML.appendChild(keyLoop(json[key]));
                 }
 
@@ -249,6 +247,14 @@ const local = (data) => {
 
 
         document.querySelector('.settings-container').appendChild(HTML);
+
+        let switchElements = HTML.querySelectorAll('.switch-element');
+        switchElements.forEach((element, index) => {
+            let nextSibling = element.nextElementSibling;
+            if (nextSibling && !nextSibling.classList.contains('switch-element')) {
+                element.classList.add('rounded');
+            }
+        });
 
         let backA = document.createElement('a');
         backA.href = '/' + location.search;

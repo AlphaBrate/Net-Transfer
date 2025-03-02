@@ -83,7 +83,7 @@ let languages = {
         'Save': '保存',
         'Settings': '設定',
         'You are the host': '主機',
-        'Back': '返回',       
+        'Back': '返回',
     },
     'zh-hk': {
         'del-title': '刪除 .[VARIABLE] 文件',
@@ -166,11 +166,11 @@ fetch(`http://localhost:${port}/server-status`,
     let before = document.createElement('span');
 
     before.innerHTML = l('You are the host') + ' | ';
-    
+
     footer.innerHTML = before.outerHTML + footer.innerHTML;
 
     let br = footer.querySelector('br');
-    
+
 
     let text = document.createElement('span');
     text.innerHTML = ' | ' + `<a href="/settings">${l('Settings')}</a>`;
@@ -191,6 +191,9 @@ fetch(`http://localhost:${port}/server-status`,
                         {
                             'text': l('Update'),
                             callback: () => {
+                                fetch('/update', {
+                                    method: 'POST'
+                                });
                                 pujs.popup(
                                     l('Update process started'),
                                     l('Close this page and wait for the server to update.'),
@@ -198,10 +201,6 @@ fetch(`http://localhost:${port}/server-status`,
                                         {
                                             'text': l('Close'),
                                             'callback': () => {
-
-                                                fetch('/update', {
-                                                    method: 'POST'
-                                                });
                                                 window.close();
                                             }
                                         }

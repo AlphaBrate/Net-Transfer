@@ -1,6 +1,6 @@
 {
     "server": {
-        "checkUpdate": false,
+        "checkUpdate": true,
         "$config": {
             "hideTitle": true
         }
