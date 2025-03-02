@@ -10,5 +10,3 @@ The Net Transfer Project is an open-source, multi-functional file transfer syste
 - **Open Source:** Available for the community to contribute and improve.
 - **New UI:** New dark mode, preview images and audios from recevier page!
 - **Auto Updater:** Enable Check Update to upgrade automatically.
-
-> This README.md is for Hack Club High Seas. 
